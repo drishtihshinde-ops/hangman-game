@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hangman Game</title>
+
+<link href="https://fonts.cdnfonts.com/css/benguiat" rel="stylesheet">
+
+<style>
+*{
+  box-sizing:border-box;
+  font-family:Arial, sans-serif;
+}
+
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#f4f4f4;
+}
+
+/* ================= FUN START SCREEN ================= */
+#startScreen{
+  background:linear-gradient(135deg,#ffecd2,#fcb69f,#a1c4fd);
+  padding:70px 90px;
+  border-radius:30px;
+  box-shadow:0 25px 60px rgba(0,0,0,0.25);
+  text-align:center;
+  animation:float 4s ease-in-out infinite;
+}
+
+@keyframes float{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-12px);}
+}
+
+.game-title{
+  font-size:72px;
+  letter-spacing:8px;
+  margin-bottom:10px;
+  font-family:'Comic Sans MS','Trebuchet MS',cursive;
+  color:#333;
+  text-shadow:4px 4px 0 #fff,7px 7px 0 rgba(0,0,0,0.15);
+}
+
+.tagline{
+  font-size:20px;
+  margin-bottom:35px;
+  font-family:'Comic Sans MS',cursive;
+}
+
+.mode-buttons{
+  display:flex;
+  justify-content:center;
+  gap:25px;
+  margin-bottom:25px;
+}
+
+.start-btn{
+  width:260px;
+  padding:22px;
+  border-radius:20px;
+  font-size:20px;
+  font-family:'Comic Sans MS',cursive;
+  cursor:pointer;
+  border:3px dashed #333;
+  background:#fff;
+  transition:all 0.3s ease;
+}
+
+.start-btn span{
+  display:block;
+  font-size:14px;
+  margin-top:8px;
+  opacity:0.8;
+}
+
+.random-btn{
+  background:#ffe066;
+}
+
+.random-btn:hover{
+  transform:rotate(-2deg) scale(1.07);
+  box-shadow:0 10px 25px rgba(0,0,0,0.25);
+}
+
+.stranger-btn{
+  background:#ff6b6b;
+  color:white;
+}
+
+.stranger-btn:hover{
+  transform:rotate(2deg) scale(1.07);
+  box-shadow:0 10px 30px rgba(255,0,0,0.5);
+}
+
+.hint{
+  font-size:14px;
+  opacity:0.7;
+  font-family:'Comic Sans MS',cursive;
+}
+
+/* ================= GAME CONTAINER ================= */
+#game{
+  display:none;
+  width:900px;
+  padding:20px;
+  border-radius:15px;
+}
+
+/* ================= THEMES ================= */
+.random{
+  background:linear-gradient(135deg,#ffecd2,#fcb69f);
+  color:#333;
+}
+
+.stranger{
+  background:radial-gradient(circle,#300000,#000);
+  color:#eee;
+  box-shadow:0 0 40px red;
+  font-family:'Benguiat', serif;
+}
+
+/* ================= HEADER ================= */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.category{
+  padding:8px 16px;
+  border-radius:8px;
+  background:rgba(255,255,255,0.3);
+  font-weight:bold;
+}
+
+/* ================= MAIN ================= */
+.main{
+  display:flex;
+  margin-top:20px;
+}
+
+canvas{
+  background:#fff;
+  border-radius:10px;
+}
+
+/* ================= WORD ================= */
+.word{
+  font-size:36px;
+  letter-spacing:10px;
+  text-align:center;
+  margin:20px 0;
+}
+
+/* ================= CLUE ================= */
+.clue{
+  text-align:center;
+  font-style:italic;
+}
+
+/* ================= KEYBOARD ================= */
+.keyboard{
+  display:grid;
+  grid-template-columns:repeat(13,1fr);
+  gap:8px;
+  margin-top:20px;
+}
+
+.key{
+  padding:10px;
+  text-align:center;
+  background:#ddd;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.key.correct{background:#4CAF50;color:white;}
+.key.wrong{background:#e53935;color:white;}
+.key.disabled{pointer-events:none;opacity:0.6;}
+
+.stranger .key{
+  background:#111;
+  color:#ffdddd;
+  border:1px solid #e50914;
+}
+
+.stranger .key:hover{
+  background:#e50914;
+  color:white;
+}
+
+.stranger .key.correct{
+  background:#00c853;
+}
+
+.stranger .key.wrong{
+  background:#b71c1c;
+}
+
+/* ================= RESULT BOX ================= */
+#resultBox{
+  display:none;
+  margin-top:20px;
+  padding:15px;
+  text-align:center;
+  font-size:22px;
+  font-weight:bold;
+  border-radius:10px;
+}
+
+#resultBox.win{
+  background:#c8e6c9;
+  color:#1b5e20;
+}
+
+#resultBox.lose{
+  background:#ffcdd2;
+  color:#b71c1c;
+}
+
+.stranger #resultBox.win{
+  background:#003300;
+  color:#00ff7f;
+  box-shadow:0 0 20px #00ff7f;
+}
+
+.stranger #resultBox.lose{
+  background:#300000;
+  color:#ff4444;
+  box-shadow:0 0 20px red;
+}
+
+/* ================= FOOTER ================= */
+.footer{
+  display:flex;
+  justify-content:center;
+  margin-top:20px;
+}
+
+.footer button{
+  padding:10px 25px;
+  margin:0 10px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:16px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ================= START SCREEN ================= -->
+<div id="startScreen">
+  <h1 class="game-title">HANGMAN</h1>
+  <p class="tagline">Guess the word before the stick figure meets its fate 🎭</p>
+
+  <div class="mode-buttons">
+    <button class="start-btn random-btn" onclick="start('random')">
+      🎉 RANDOM MODE
+      <span>Fun • Bright • Easy</span>
+    </button>
+
+    <button class="start-btn stranger-btn" onclick="start('stranger')">
+      🩸 STRANGER THINGS
+      <span>Dark • Mystery • Escape</span>
+    </button>
+  </div>
+
+  <p class="hint">✨ Tip: Every wrong guess builds the hangman!</p>
+</div>
+
+<!-- ================= GAME ================= -->
+<div id="game">
+  <div class="header">
+    <div class="category" id="category"></div>
+    <div>Wrong guesses: <span id="wrongCount">0</span>/6</div>
+  </div>
+
+  <div class="main">
+    <canvas id="canvas" width="250" height="300"></canvas>
+    <div style="flex:1;padding-left:30px;">
+      <div class="word" id="word"></div>
+      <div class="clue" id="clue"></div>
+      <div class="keyboard" id="keyboard"></div>
+    </div>
+  </div>
+
+  <div id="resultBox"></div>
+
+  <div class="footer">
+    <button onclick="restart()">🔄 Restart</button>
+    <button onclick="exitGame()">❌ Exit</button>
+  </div>
+</div>
+
+<script>
+const randomWords=[
+  {word:"BUTTERFLY",category:"Insects",clue:"A colorful flying insect"},
+  {word:"PIZZA",category:"Food",clue:"Cheesy comfort food"},
+  {word:"FOOTBALL",category:"Sports",clue:"Played with goals"},
+  {word:"PARIS",category:"Countries",clue:"City of love"},
+  {word:"TORTOISE",category:"Animals",clue:"I carry my own home"},
+  {word:"SOUP",category:"Food",clue:"Begin as a liquid and end as a comfort"},
+  {word:"SINGAPORE",category:"Countries",clue:"sunny, tropical island in Southeast Asia"},
+  {word:"BADMINTON",category:"Sports",clue:"Played with a racket"},
+  {word:"TOPOGRAPHY",category:"Geography"},
+  {word:"POMEGRANATE",category:"Fruits",clue:"Red in color"},
+  {word:"TOPOGRAPHY",category:"Geography"},
+  {word:"RUSSIA",category:"Countries",clue:"Very cold"},
+  {word:"CRAYON",category:"School Supplies",clue:"Colorfull"},
+  {word:"FORK",category:"Kitchen Tools"},
+  {word:"VAMPIRE",category:"Fantasy",clue:"Loves Blood"},
+  {word:"SHOULDER",category:"Body Parts"},
+  {word:"KNUCKLES",category:"Body Parts"},
+  {word:"WASP",category:"Insects"},
+  {word:"TANGLED",category:"Disney"},
+  {word:"TACO",category:"Food",clue:"Mexican"},
+  {word:"SUSHI",category:"Food",clue:"Japanese delicacy"},
+
+
+];
+
+const strangerWords=[
+  {word:"PORTAL",clue:"Gateway between worlds"},
+  {word:"JANE",clue:"A powerful girl"},
+  {word:"HAWKINS",clue:"Town where it all began"},
+  {word:"MINDFLAYER",clue:"Also known as shadow monster"},
+  {word:"DEMOGORGON", clue:"The monster from the Upside Down"},
+{word:"EGGOS", clue:"Eleven's favorite food"},
+{word:"STARCOURT", clue:"Mall where chaos erupted"},
+{word:"HENRY", clue:"A terrifying mind-killer"},
+{word:"DUSTIN", clue:"Curly hair, big heart"},
+{word:"WILL", clue:"The boy who vanished"},
+{word:"STEVE", clue:"Heart-throbber with the best hair"},
+{word:"LIGHTS", clue:"A way to communicate through the Upside Down"},
+];
+
+let selectedWord="", guessed=[], wrong=0, mode="";
+const ctx=document.getElementById("canvas").getContext("2d");
+
+function start(m){
+  mode=m;
+  document.getElementById("startScreen").style.display="none";
+  document.getElementById("game").style.display="block";
+  document.getElementById("game").className=m;
+  document.getElementById("resultBox").style.display="none";
+
+  const data = m==="random"
+    ? randomWords[Math.floor(Math.random()*randomWords.length)]
+    : strangerWords[Math.floor(Math.random()*strangerWords.length)];
+
+  selectedWord=data.word;
+  guessed=[];
+  wrong=0;
+
+  document.getElementById("category").innerText =
+    m==="random" ? data.category : "Escape the Upside Down";
+  document.getElementById("clue").innerText="Clue: "+data.clue;
+  document.getElementById("wrongCount").innerText=wrong;
+
+  ctx.clearRect(0,0,250,300);
+  drawStand();
+  drawWord();
+  drawKeyboard();
+}
+
+function drawStand(){
+  ctx.strokeStyle=mode==="stranger"?"red":"black";
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.moveTo(30,270);ctx.lineTo(220,270);
+  ctx.moveTo(70,270);ctx.lineTo(70,20);
+  ctx.moveTo(70,20);ctx.lineTo(170,20);
+  ctx.moveTo(170,20);ctx.lineTo(170,50);
+  ctx.stroke();
+}
+
+function drawHangman(){
+  if(wrong===1){ctx.beginPath();ctx.arc(170,70,20,0,Math.PI*2);ctx.stroke();}
+  if(wrong===2){ctx.beginPath();ctx.moveTo(170,90);ctx.lineTo(170,160);ctx.stroke();}
+  if(wrong===3){ctx.beginPath();ctx.moveTo(170,110);ctx.lineTo(140,140);ctx.stroke();}
+  if(wrong===4){ctx.beginPath();ctx.moveTo(170,110);ctx.lineTo(200,140);ctx.stroke();}
+  if(wrong===5){ctx.beginPath();ctx.moveTo(170,160);ctx.lineTo(150,210);ctx.stroke();}
+  if(wrong===6){ctx.beginPath();ctx.moveTo(170,160);ctx.lineTo(190,210);ctx.stroke();}
+}
+
+function drawWord(){
+  document.getElementById("word").innerText =
+    selectedWord.split("").map(l=>guessed.includes(l)?l:"_").join(" ");
+}
+
+function drawKeyboard(){
+  const kb=document.getElementById("keyboard");
+  kb.innerHTML="";
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l=>{
+    const btn=document.createElement("div");
+    btn.className="key";
+    btn.innerText=l;
+    btn.onclick=()=>guess(l,btn);
+    kb.appendChild(btn);
+  });
+}
+
+function guess(l,btn){
+  btn.classList.add("disabled");
+  if(selectedWord.includes(l)){
+    btn.classList.add("correct");
+    guessed.push(l);
+    drawWord();
+    if(selectedWord.split("").every(x=>guessed.includes(x))) end(true);
+  }else{
+    btn.classList.add("wrong");
+    wrong++;
+    document.getElementById("wrongCount").innerText=wrong;
+    drawHangman();
+    if(wrong===6) end(false);
+  }
+}
+
+function end(win){
+  const box=document.getElementById("resultBox");
+  box.style.display="block";
+  box.className=win?"win":"lose";
+  box.innerHTML=win
+    ? "🎉 YOU WON! You survived!"
+    : "💀 YOU LOST! The word was <b>"+selectedWord+"</b>";
+
+  document.querySelectorAll(".key").forEach(k=>k.classList.add("disabled"));
+}
+
+function restart(){ start(mode); }
+function exitGame(){
+  document.getElementById("game").style.display="none";
+  document.getElementById("startScreen").style.display="block";
+}
+</script>
+
+</body>
+</html>
